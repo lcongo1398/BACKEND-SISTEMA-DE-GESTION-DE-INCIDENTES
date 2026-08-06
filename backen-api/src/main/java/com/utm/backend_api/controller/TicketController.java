@@ -1,59 +1,73 @@
 package com.utm.backend_api.controller;
 
-import java.net.URI;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import com.utm.backend_api.entity.Ticket;
+import com.utm.backend_api.enums.Estado;
 import com.utm.backend_api.repository.TicketRepository;
 
 @RestController
-@RequestMapping("/tickets")
+@RequestMapping("/api/tickets")
 @CrossOrigin(origins = "*")
 public class TicketController {
 
-    private final TicketRepository repo;
-    public TicketController(TicketRepository repo) { this.repo = repo; }
+    private final TicketRepository repositorio;
 
-    @GetMapping
-    public ResponseEntity<List<Ticket>> listarTodos() {
-        return ResponseEntity.ok(repo.findAll());
+    // Constructor para inyectar el repositorio
+    public TicketController(TicketRepository repositorio) {
+        this.repositorio = repositorio;
     }
 
+    // Obtener todos
+    @GetMapping
+    public List<Ticket> listarTodos() {
+        return repositorio.findAll();
+    }
+
+    // Obtener uno por id
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> buscarPorId(@PathVariable Long id) {
-        return repo.findById(id)
+        return repositorio.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Crear nuevo
     @PostMapping
-    public ResponseEntity<Ticket> crearTicket(@RequestBody Ticket nuevoTicket) {
-        Ticket guardado = repo.save(nuevoTicket);
-        URI ubicacion = URI.create("/tickets/" + guardado.getId());
-        return ResponseEntity.created(ubicacion).body(guardado);
+    public Ticket crearNuevo(@RequestBody Ticket ticket) {
+        return repositorio.save(ticket);
     }
 
+    // Actualizar
     @PutMapping("/{id}")
-    public ResponseEntity<Ticket> actualizarTicket(@PathVariable Long id, @RequestBody Ticket datos) {
-        return repo.findById(id)
-                .map(existente -> {
-                    existente.setTitulo(datos.getTitulo());
-                    existente.setDescripcion(datos.getDescripcion());
-                    existente.setCategoria(datos.getCategoria());
-                    existente.setPrioridad(datos.getPrioridad());
-                    existente.setEstado(datos.getEstado());
-                    return ResponseEntity.ok(repo.save(existente));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Ticket> actualizarTicket(@PathVariable Long id, @RequestBody Map<String, Object> datos) {
+        Optional<Ticket> ticketOpt = repositorio.findById(id);
+        
+        if (ticketOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Ticket ticketExistente = ticketOpt.get();
+
+        if (datos.containsKey("estado")) {
+            String valorEstado = datos.get("estado").toString().trim();
+            ticketExistente.setEstado(Estado.valueOf(valorEstado));
+        }
+
+        Ticket guardado = repositorio.save(ticketExistente);
+        return ResponseEntity.ok(guardado);
     }
 
+    // Eliminar
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarTicket(@PathVariable Long id) {
-        if (!repo.existsById(id)) return ResponseEntity.notFound().build();
-        repo.deleteById(id);
+    public ResponseEntity<Void> borrarTicket(@PathVariable Long id) {
+        if (!repositorio.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        repositorio.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }
