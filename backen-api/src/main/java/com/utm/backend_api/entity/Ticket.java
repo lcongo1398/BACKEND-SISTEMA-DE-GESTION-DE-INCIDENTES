@@ -1,5 +1,8 @@
 package com.utm.backend_api.entity;
 
+import com.utm.backend_api.enums.Categoria;
+import com.utm.backend_api.enums.Prioridad;
+import com.utm.backend_api.enums.Estado;
 import jakarta.persistence.*;
 
 @Entity
@@ -16,18 +19,21 @@ public class Ticket {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String categoria;
+    private Categoria categoria;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String prioridad;
+    private Prioridad prioridad;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String estado;
+    private Estado estado;
 
     public Ticket() {}
 
-    public Ticket(String titulo, String descripcion, String categoria, String prioridad, String estado) {
+    public Ticket(String titulo, String descripcion, Categoria categoria, Prioridad prioridad, Estado estado) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.categoria = categoria;
@@ -44,12 +50,12 @@ public class Ticket {
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
 
-    public String getPrioridad() { return prioridad; }
-    public void setPrioridad(String prioridad) { this.prioridad = prioridad; }
+    public Prioridad getPrioridad() { return prioridad; }
+    public void setPrioridad(Prioridad prioridad) { this.prioridad = prioridad; }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public Estado getEstado() { return estado; }
+    public void setEstado(Estado estado) { this.estado = estado; }
 }
